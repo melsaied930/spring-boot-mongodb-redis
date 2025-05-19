@@ -1,3 +1,46 @@
+#  application.yaml
+
 spring:
   application:
     name: spring-boot-mongodb-redis
+
+  data:
+
+    mongodb:
+      uri: mongodb://localhost:27017/user_db
+      #      host: mongo
+      #      port: 27017
+      #      database: demo-database
+      username: root
+      password: secret
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60000
+      cache-null-values: false
+
+  redis:
+    host: redis
+    port: 6379
+    password: secret
+
+
+
+
+
+
+logging:
+  level:
+    root: INFO
+    MongoDBTransactions: DEBUG
+    RedisTransactions: DEBUG
+    ServiceOperations: INFO
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
+#    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+#  file:
+#    name: application.log
+
+# Configuration to disable Redis for testing
+cache:
+  enabled: true
