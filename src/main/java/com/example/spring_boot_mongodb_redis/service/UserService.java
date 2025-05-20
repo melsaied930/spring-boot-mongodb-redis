@@ -5,12 +5,15 @@ import com.example.spring_boot_mongodb_redis.exception.UserNotFoundException;
 import com.example.spring_boot_mongodb_redis.model.User;
 import com.example.spring_boot_mongodb_redis.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -40,10 +43,15 @@ public class UserService {
                 });
     }
 
+    @Autowired
+    private CacheManager cacheManager;
+
     public User create(User user) {
         log.info("Creating new user with data: {}", user);
         user.setId(sequenceGenerator.generateSequence("user_sequence"));
-        return repository.save(user);
+        User savedUser = repository.save(user);
+        Objects.requireNonNull(cacheManager.getCache("users")).put(savedUser.getId(), savedUser);
+        return savedUser;
     }
 
     @CachePut(value = "users", key = "#id")

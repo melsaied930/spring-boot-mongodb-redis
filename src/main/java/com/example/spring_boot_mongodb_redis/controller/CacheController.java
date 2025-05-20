@@ -47,9 +47,10 @@ public class CacheController {
 
     @PostMapping("/clear")
     public Map<String, String> clearCache() {
-        cacheManager.getCacheNames().forEach(cacheName -> {
-            Objects.requireNonNull(cacheManager.getCache(cacheName)).clear();
-        });
+        cacheManager.getCacheNames().forEach(cacheName -> Objects
+                .requireNonNull(cacheManager
+                        .getCache(cacheName))
+                .clear());
         cacheMetrics.resetMetrics();
 
         Map<String, String> response = new HashMap<>();
