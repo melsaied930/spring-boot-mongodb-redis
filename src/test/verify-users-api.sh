@@ -100,4 +100,3 @@ fail_if_not "404" "$STATUS" "Update deleted user returns 404"
 echo "-------------------------------"
 
 echo "All tests passed successfully ✅"
-
