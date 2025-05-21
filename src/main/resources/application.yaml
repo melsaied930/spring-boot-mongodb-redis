@@ -1,20 +1,22 @@
+#  application.yaml
+
 spring:
   application:
-    name: spring-boot-mongodb-redis
+    name: ${SPRING_APP_NAME:spring-boot}
 
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: user_db
-      username: root
-      password: pass
-      authentication-database: admin
+      host: ${SPRING_DATA_MONGODB_HOST}
+      port: ${SPRING_DATA_MONGODB_PORT}
+      database: ${SPRING_DATA_MONGODB_DATABASE}
+      username: ${SPRING_DATA_MONGODB_USERNAME}
+      password: ${SPRING_DATA_MONGODB_PASSWORD}
+      authentication-database: ${SPRING_DATA_MONGODB_AUTH_DB}
 
     redis:
-      host: localhost
-      port: 6379
-      password: password
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
+      password: ${SPRING_DATA_REDIS_PASSWORD}
       repositories:
         enabled: false
 

@@ -1,77 +1,113 @@
-# Help Guide – Spring Boot MongoDB & Redis Demo
+# 🛠️ Help Guide – Spring Boot MongoDB & Redis Demo
 
-This guide provides help on running, configuring, and using the application in development and test environments.
+This guide covers how to configure, run, test, and debug the Spring Boot application using **MongoDB**, **Redis**, and **Docker Compose**.
 
 ---
 
-## 🔧 Configuration Overview
+## 📦 Project Overview
 
-All settings can be adjusted in `application.yaml`.
+This project demonstrates:
 
-### Enable or Disable Redis Caching
+* REST APIs for user management
+* Redis-based caching with metrics
+* MongoDB persistence
+* Dockerized infrastructure with health checks
+
+---
+
+## 🔧 Configuration
+
+All main settings are located in `application.yaml` and `.env`.
+
+### ✅ Cache Configuration
+
+Enable/disable Redis caching:
 
 ```yaml
-cache:
-  enabled: true  # Set too false to disable Redis caching (NoOpCacheManager will be used)
+spring:
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60000
+      cache-null-values: false
+```
+
+Or override via `.env`:
+
+```dotenv
+SPRING_DATA_REDIS_PASSWORD=password
+```
+
+To **disable caching**, replace `type: redis` with:
+
+```yaml
+type: none
 ```
 
 ---
 
-## 🛠 Environment Setup
+## ⚙️ Environment Setup
 
-### Prerequisites
+### 🔰 Prerequisites
 
-- Java 21
-- Maven
-- Docker & Docker Compose
+* Java 21
+* Maven 3.9+
+* Docker + Docker Compose
+* MongoDB Shell (`mongosh`)
+* Redis CLI (`redis-cli`)
 
 ---
 
-## ▶️ Running the App
+## ▶️ Running the Application
 
-### Locally via Maven
+### 💻 Locally via Maven
 
 ```bash
+set -a && source .env && set +a
 ./mvnw clean spring-boot:run
 ```
 
-### With Docker Compose
+### 🐳 With Docker Compose
 
 ```bash
-docker compose up -d
+docker compose --env-file .env up -d
 ```
 
-Services:
+> Access services:
 
-- MongoDB → `localhost:27017`
-- Redis → `localhost:6379`
-- Mongo Express → `http://localhost:8081`
-
----
-
-## 🧪 API Testing
-
-### User Endpoints
-
-- `GET /api/users` – List users
-- `GET /api/users/{id}` – Get user
-- `POST /api/users` – Create user
-- `PUT /api/users/{id}` – Update user
-- `DELETE /api/users/{id}` – Delete user
-
-### Cache Endpoints
-
-- `GET /api/cache/metrics` – View cache metrics
-- `GET /api/cache/status` – View cache config
-- `POST /api/cache/clear` – Clear caches and reset metrics
+* MongoDB: `localhost:27017`
+* Redis: `localhost:6379`
+* Mongo Express UI: [http://localhost:8081](http://localhost:8081)
 
 ---
 
-## 🔄 Data Initialization
+## 🧪 API Endpoints
 
-The app will autoload data from `src/main/resources/user.json` at startup **if the MongoDB collection is empty**.
+### 👤 User API
 
-### Sample `user.json`
+| Method | Endpoint          | Description     |
+| ------ | ----------------- | --------------- |
+| GET    | `/api/users`      | List all users  |
+| GET    | `/api/users/{id}` | Get user by ID  |
+| POST   | `/api/users`      | Create new user |
+| PUT    | `/api/users/{id}` | Update user     |
+| DELETE | `/api/users/{id}` | Delete user     |
+
+### 🧠 Cache API
+
+| Method | Endpoint             | Description               |
+| ------ | -------------------- | ------------------------- |
+| GET    | `/api/cache/status`  | View cache configuration  |
+| GET    | `/api/cache/metrics` | View cache hit/miss stats |
+| POST   | `/api/cache/clear`   | Clear all caches          |
+
+---
+
+## 📥 Data Initialization
+
+If the MongoDB collection is **empty** at startup, the app will auto-load `src/main/resources/user.json`.
+
+### Example `user.json` format:
 
 ```json
 [
@@ -85,9 +121,9 @@ The app will autoload data from `src/main/resources/user.json` at startup **if t
 
 ---
 
-## 🐞 Logs and Debugging
+## 🐞 Debugging & Logs
 
-Enable detailed logs in `application.yaml`:
+Enable verbose logging in `application.yaml`:
 
 ```yaml
 logging:
@@ -97,9 +133,16 @@ logging:
     ServiceOperations: INFO
 ```
 
+To test Redis impact:
+
+* Compare logs with/without caching.
+* Toggle caching in `application.yaml`.
+
 ---
 
-## 📤 Build & Package
+## 🚀 Build & Package
+
+Build the app:
 
 ```bash
 ./mvnw clean package
@@ -113,14 +156,47 @@ java -jar target/spring-boot-mongodb-redis-0.0.1-SNAPSHOT.jar
 
 ---
 
-## 🙋 FAQ
+## 🧪 Manual Connectivity Tests
 
-**Q: How do I disable Redis but keep MongoDB?**  
-A: Set `cache.enabled=false` in `application.yaml`.
+### 🔁 Ping MongoDB
 
-**Q: Can I test Redis performance impact?**  
-A: Yes. Compare logs and timings with `cache.enabled` toggled.
+```bash
+mongosh \
+  --host 127.0.0.1 \
+  --port 27017 \
+  --username root \
+  --password secret \
+  --authenticationDatabase admin \
+  --eval "db.adminCommand({ ping: 1 })"
+```
+
+### 💡 Ping Redis
+
+```bash
+redis-cli \
+  -h 127.0.0.1 \
+  -p 6379 \
+  -a password ping
+# Expected: PONG
+```
 
 ---
 
-For any issues or enhancements, contact: **Mohamed Elsayed**
+## 🙋 FAQ
+
+**Q: How do I disable Redis caching only?**
+A: Set `spring.cache.type=none` in `application.yaml`.
+
+**Q: How can I verify Redis performance difference?**
+A: Enable `RedisTransactions` log and compare method timings with/without caching.
+
+**Q: Is Docker required?**
+A: No, but it simplifies local infrastructure setup and isolation.
+
+---
+
+For support, reach out to: **Mohamed Elsayed**
+
+---
+
+Would you like this saved as a file or copied into your project automatically?
