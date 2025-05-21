@@ -9,49 +9,52 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 @Component
 public class UserDataInitializer implements CommandLineRunner {
+
     private final UserRepository userRepository;
-    private final ResourceLoader resourceLoader;
     private final RestTemplate restTemplate;
     private final AppConfig appConfig;
+    private final ObjectMapper mapper;
 
-    public UserDataInitializer(UserRepository userRepository,
-                               ResourceLoader resourceLoader,
-                               RestTemplate restTemplate,
-                               AppConfig appConfig) {
+    public UserDataInitializer(UserRepository userRepository, RestTemplate restTemplate, AppConfig appConfig) {
         this.userRepository = userRepository;
-        this.resourceLoader = resourceLoader;
         this.restTemplate = restTemplate;
         this.appConfig = appConfig;
+        this.mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         if (userRepository.count() == 0) {
             log.info("📦 Starting user data initialization...");
+
             List<User> users = loadUsersFromFile();
             if (users.isEmpty()) {
                 users = fetchUsersFromApi();
+                if (!users.isEmpty()) {
+                    saveUsersToFile(users);
+                }
             }
+
             if (!users.isEmpty()) {
                 userRepository.saveAll(users);
                 log.info("✅ Successfully initialized MongoDB with {} users", users.size());
             } else {
-                log.warn("⚠️ No users were loaded from either source");
+                log.warn("⚠️ No users were loaded from file or API.");
             }
         } else {
             log.info("✅ User data already present. Skipping initialization.");
@@ -61,29 +64,17 @@ public class UserDataInitializer implements CommandLineRunner {
     private List<User> loadUsersFromFile() {
         List<User> users = new ArrayList<>();
         try {
-            Resource resource = resourceLoader.getResource(appConfig.getUserDataFile());
-            if (!resource.exists()) {
-                log.info("ℹ️ {} not found in classpath", appConfig.getUserDataFile());
+            File file = new File(appConfig.getUserDataFile());
+            if (!file.exists()) {
+                log.info("ℹ️ User data file not found: {}", file.getAbsolutePath());
                 return users;
             }
 
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            log.info("ℹ️ Loading users from file: {}", file.getAbsolutePath());
+            User[] userArray = mapper.readValue(file, User[].class);
+            users.addAll(Arrays.asList(userArray));
+            log.info("✅ Loaded {} users from file", users.size());
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    try {
-                        JsonNode node = mapper.readTree(line);
-                        User user = parseUserFromJsonNode(node);
-                        users.add(user);
-                    } catch (Exception e) {
-                        log.warn("⚠️ Failed to parse user: {}", line, e);
-                    }
-                }
-            }
-            log.info("ℹ️ Loaded {} users from {}", users.size(), appConfig.getUserDataFile());
         } catch (Exception e) {
             log.warn("⚠️ Failed to load users from file", e);
         }
@@ -93,40 +84,42 @@ public class UserDataInitializer implements CommandLineRunner {
     private List<User> fetchUsersFromApi() {
         List<User> users = new ArrayList<>();
         try {
-            log.info("ℹ️ Fetching users from API: {}", appConfig.getApiUrl());
+            log.info("🌐 Fetching users from API: {}", appConfig.getApiUrl());
             String response = restTemplate.getForObject(appConfig.getApiUrl(), String.class);
 
-            ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response);
             JsonNode usersNode = root.path("users");
 
             for (JsonNode node : usersNode) {
                 try {
-                    User user = parseUserFromApiNode(node);
+                    User user = parseUserFromNode(node);
                     users.add(user);
                 } catch (Exception e) {
-                    log.warn("⚠️ Failed to parse user from API: {}", node, e);
+                    log.warn("⚠️ Failed to parse user from API node: {}", node, e);
                 }
             }
-            log.info("ℹ️ Fetched {} users from API", users.size());
+
+            log.info("✅ Fetched {} users from API", users.size());
+
         } catch (Exception e) {
             log.error("❌ Failed to fetch users from API", e);
         }
         return users;
     }
 
-    private User parseUserFromJsonNode(JsonNode node) {
-        Long id = node.path("id").asLong();
-        LocalDate birthDate = null;
-        JsonNode dateNode = node.path("birthDate");
-        if (!dateNode.isMissingNode()) {
-            if (dateNode.has("$date")) {
-                String dateStr = dateNode.path("$date").asText();
-                birthDate = LocalDate.parse(dateStr.substring(0, 10));
-            } else {
-                birthDate = LocalDate.parse(dateNode.asText());
-            }
+    private void saveUsersToFile(List<User> users) {
+        try {
+            File file = new File(appConfig.getUserDataFile());
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, users);
+            log.info("💾 Saved {} users to file: {}", users.size(), file.getAbsolutePath());
+        } catch (Exception e) {
+            log.warn("⚠️ Failed to save users to file", e);
         }
+    }
+
+    private User parseUserFromNode(JsonNode node) {
+        Long id = node.path("id").asLong();
+        LocalDate birthDate = parseBirthDate(node.path("birthDate"));
 
         return User.builder()
                 .id(id)
@@ -142,35 +135,23 @@ public class UserDataInitializer implements CommandLineRunner {
                 .build();
     }
 
-    private User parseUserFromApiNode(JsonNode node) {
-        Long id = node.path("id").asLong();
-        String rawDate = node.path("birthDate").asText();
-        LocalDate birthDate = null;
-
+    private LocalDate parseBirthDate(JsonNode dateNode) {
         try {
-            // Handle both formats: "1996-5-30" and "1996-05-30"
-            String[] dateParts = rawDate.split("-");
-            if (dateParts.length == 3) {
-                String year = dateParts[0];
-                String month = dateParts[1].length() == 1 ? "0" + dateParts[1] : dateParts[1];
-                String day = dateParts[2].length() == 1 ? "0" + dateParts[2] : dateParts[2];
-                birthDate = LocalDate.parse(String.format("%s-%s-%s", year, month, day));
+            if (dateNode.isTextual()) {
+                String[] parts = dateNode.asText().split("-");
+                if (parts.length == 3) {
+                    String year = parts[0];
+                    String month = parts[1].length() == 1 ? "0" + parts[1] : parts[1];
+                    String day = parts[2].length() == 1 ? "0" + parts[2] : parts[2];
+                    return LocalDate.parse(String.format("%s-%s-%s", year, month, day));
+                }
+            } else if (dateNode.has("$date")) {
+                String rawDate = dateNode.get("$date").asText();
+                return LocalDate.parse(rawDate.substring(0, 10));
             }
         } catch (DateTimeParseException e) {
-            log.warn("⚠️ Could not parse birthDate: {}", rawDate);
+            log.warn("⚠️ Failed to parse birthDate: {}", dateNode);
         }
-
-        return User.builder()
-                .id(id)
-                .firstName(node.path("firstName").asText())
-                .lastName(node.path("lastName").asText())
-                .maidenName(node.path("maidenName").asText())
-                .gender(node.path("gender").asText())
-                .email(node.path("email").asText())
-                .phone(node.path("phone").asText())
-                .username(node.path("username").asText())
-                .password(node.path("password").asText())
-                .birthDate(birthDate)
-                .build();
+        return null;
     }
 }
