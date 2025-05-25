@@ -1,16 +1,15 @@
 services:
-  mongodb:
-    image: mongo:latest
+  redis:
+    image: redis:latest
+    command: >
+      redis-server
+      --user ${REDIS_USER} on >${REDIS_PASSWORD} ~* &* +@all
     ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: demo-database
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: secret
+      - "6379:6379"
     volumes:
-      - mongodb_data:/data/db
+      - redis_data:/data
     healthcheck:
-      test: ["CMD", "mongosh", "mongodb:27017/demo-database", "--quiet", "--eval", "db.runCommand('ping')"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,29 +19,9 @@ services:
     ports:
       - "8081:8081"
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: secret
-      ME_CONFIG_MONGODB_SERVER: mongodb
-      ME_CONFIG_MONGODB_URL: mongodb://root:secret@mongodb:27017/demo-database?authSource=admin
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
-    depends_on:
-      mongodb:
-        condition: service_healthy
-
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
-    command: redis-server --requirepass password
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "password", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      ME_CONFIG_MONGODB_URL: ${MONGO_EXPRESS_URI}
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
 
 volumes:
-  mongodb_data:
   redis_data:
