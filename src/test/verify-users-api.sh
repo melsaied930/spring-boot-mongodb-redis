@@ -8,10 +8,10 @@ fail_if_not() {
   local actual=$2
   local message=$3
   if [[ "$expected" != "$actual" ]]; then
-    echo "❌ $message (Expected: $expected, Got: $actual)"
+    echo " ❌ $message (Expected: $expected, Got: $actual)"
     exit 1
   else
-    echo "✅ $message (Status: $actual)"
+    echo " ✅ $message (Status: $actual)"
   fi
 }
 
