@@ -1,4 +1,9 @@
+#  application.yaml
+
 spring:
+  config:
+    import: optional:classpath:env.properties
+
   application:
     name: ${SPRING_APP_NAME:spring-boot}
 
@@ -9,8 +14,8 @@ spring:
     redis:
       host: ${SPRING_DATA_REDIS_HOST}
       port: ${SPRING_DATA_REDIS_PORT}
-      username: ${SPRING_DATA_REDIS_USERNAME}
       password: ${SPRING_DATA_REDIS_PASSWORD}
+      timeout: 5000
       repositories:
         enabled: false
 
@@ -27,3 +32,4 @@ logging:
     MongoDBTransactions: DEBUG
     RedisTransactions: DEBUG
     ServiceOperations: DEBUG
+    org.springframework.boot.docker.compose: DEBUG
