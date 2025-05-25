@@ -1,5 +1,3 @@
-#  compose.yaml
-
 services:
   redis:
     image: redis:latest
