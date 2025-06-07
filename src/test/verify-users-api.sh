@@ -76,7 +76,7 @@ EOF
 RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "$BASE_URL/$USER_ID" -H "$CONTENT_TYPE" -d "$UPDATED_JSON")
 BODY=$(echo "$RESPONSE" | sed '$d')
 STATUS=$(echo "$RESPONSE" | tail -n1)
-fail_if_not "200" "$STATUS" "Update user ID $USER_ID"
+fail_if_not "202" "$STATUS" "Update user ID $USER_ID"
 USERNAME=$(echo "$BODY" | jq -r '.username')
 fail_if_not "updatedtester" "$USERNAME" "Updated username check"
 echo "-------------------------------"
@@ -84,7 +84,7 @@ echo "-------------------------------"
 echo "=== 5. DELETE user by ID: $USER_ID ==="
 RESPONSE=$(curl -s -w "\n%{http_code}" -X DELETE "$BASE_URL/$USER_ID")
 STATUS=$(echo "$RESPONSE" | tail -n1)
-fail_if_not "204" "$STATUS" "Delete user ID $USER_ID"
+fail_if_not "202" "$STATUS" "Delete user ID $USER_ID"
 echo "-------------------------------"
 
 echo "=== 6. Verify deleted user is gone ==="

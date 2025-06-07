@@ -36,13 +36,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public User updateUser(@PathVariable Long id, @RequestBody User user) {
         return service.update(id, user);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public void deleteUser(@PathVariable Long id) {
         service.delete(id);
     }
