@@ -1,7 +1,3 @@
-Here’s a clean and concise summary you can add to your `HELP.md` to document the MongoDB server fix steps:
-
----
-
 ## 🧰 MongoDB Server Recovery Guide
 
 This section outlines the steps followed to recover and reinitialize a MongoDB server with a replica set configuration.

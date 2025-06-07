@@ -1,8 +1,8 @@
-#  application.yaml
+#  src/main/resources/application.yaml
 
 spring:
   config:
-    import: optional:classpath:env.properties
+    import: classpath:env.properties
 
   application:
     name: ${SPRING_APP_NAME:spring-boot}
@@ -32,4 +32,3 @@ logging:
     MongoDBTransactions: DEBUG
     RedisTransactions: DEBUG
     ServiceOperations: DEBUG
-    org.springframework.boot.docker.compose: DEBUG

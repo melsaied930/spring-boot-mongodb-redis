@@ -1,27 +1,97 @@
+#  compose.yaml
+
 services:
+
+  mongo1:
+    image: mongo:latest
+    container_name: mongo1
+    ports:
+      - "${MONGO1_PORT}:${MONGO_DB_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO1_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO1_PASS}
+    volumes:
+      - mongo1_data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD", "mongosh", "--host", "localhost", "--quiet",
+          "--eval", "db.adminCommand('ping')",
+          "--authenticationDatabase", "admin",
+          "-u", "${MONGO1_USER}", "-p", "${MONGO1_PASS}"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo2:
+    image: mongo:latest
+    container_name: mongo2
+    ports:
+      - "${MONGO2_PORT}:${MONGO_DB_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO2_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO2_PASS}
+    volumes:
+      - mongo2_data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD", "mongosh", "--host", "localhost", "--quiet",
+          "--eval", "db.adminCommand('ping')",
+          "--authenticationDatabase", "admin",
+          "-u", "${MONGO2_USER}", "-p", "${MONGO2_PASS}"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
   redis:
     image: redis:latest
+    container_name: redis
     command: >
       redis-server
-      --user ${REDIS_USER} on >${REDIS_PASSWORD} ~* &* +@all
+      --requirepass ${REDIS_PASS}
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:${REDIS_PORT_INTERNAL}"
     volumes:
       - redis_data:/data
+    networks:
+      - backend
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASS}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  mongo-express:
-    image: mongo-express:latest
-    ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_URL: ${MONGO_EXPRESS_URI}
-      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME}
-      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
+      start_period: 10s
 
 volumes:
+  mongo1_data:
+  mongo2_data:
   redis_data:
+
+networks:
+  backend:
+    driver: bridge
+
+# ──────────────── Test Commands ─────────────────
+# Redis:
+#   ❯ redis-cli -h 127.0.0.1 -p 6379 -a password ping
+#   PONG
+
+# Mongo1:
+#   ❯ mongosh "mongodb://root1:pass1@127.0.0.1:27117/admin" --eval "db.adminCommand('ping')"
+#   { ok: 1 }
+
+# Mongo2:
+#   ❯ mongosh "mongodb://root2:pass2@127.0.0.1:27217/admin" --eval "db.adminCommand('ping')"
+#   { ok: 1 }
+#
+#  redis-cli -h 127.0.0.1 -p 6379 -a password ping && mongosh "mongodb://root1:pass1@127.0.0.1:27117/admin" --eval "db.adminCommand('ping')" && mongosh "mongodb://root2:pass2@127.0.0.1:27217/admin" --eval "db.adminCommand('ping')"
+
