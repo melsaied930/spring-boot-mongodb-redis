@@ -1,6 +1,6 @@
 package com.example.spring_boot_mongodb_redis.init;
 
-import com.example.spring_boot_mongodb_redis.config.AppConfig;
+import com.example.spring_boot_mongodb_redis.config.AppProperties;
 import com.example.spring_boot_mongodb_redis.model.User;
 import com.example.spring_boot_mongodb_redis.repository.UserRepository;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -25,13 +25,13 @@ public class UserDataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
-    private final AppConfig appConfig;
+    private final AppProperties appProperties;
     private final ObjectMapper mapper;
 
-    public UserDataInitializer(UserRepository userRepository, RestTemplate restTemplate, AppConfig appConfig) {
+    public UserDataInitializer(UserRepository userRepository, RestTemplate restTemplate, AppProperties appProperties) {
         this.userRepository = userRepository;
         this.restTemplate = restTemplate;
-        this.appConfig = appConfig;
+        this.appProperties = appProperties;
         this.mapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -64,7 +64,7 @@ public class UserDataInitializer implements CommandLineRunner {
     private List<User> loadUsersFromFile() {
         List<User> users = new ArrayList<>();
         try {
-            File file = new File(appConfig.getUserDataFile());
+            File file = new File(appProperties.getUserDataFile());
             if (!file.exists()) {
                 log.info("ℹ️ User data file not found: {}", file.getAbsolutePath());
                 return users;
@@ -84,8 +84,8 @@ public class UserDataInitializer implements CommandLineRunner {
     private List<User> fetchUsersFromApi() {
         List<User> users = new ArrayList<>();
         try {
-            log.info("🌐 Fetching users from API: {}", appConfig.getApiUrl());
-            String response = restTemplate.getForObject(appConfig.getApiUrl(), String.class);
+            log.info("🌐 Fetching users from API: {}", appProperties.getApiUrl());
+            String response = restTemplate.getForObject(appProperties.getApiUrl(), String.class);
 
             JsonNode root = mapper.readTree(response);
             JsonNode usersNode = root.path("users");
@@ -109,7 +109,7 @@ public class UserDataInitializer implements CommandLineRunner {
 
     private void saveUsersToFile(List<User> users) {
         try {
-            File file = new File(appConfig.getUserDataFile());
+            File file = new File(appProperties.getUserDataFile());
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, users);
             log.info("💾 Saved {} users to file: {}", users.size(), file.getAbsolutePath());
         } catch (Exception e) {

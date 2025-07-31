@@ -25,6 +25,10 @@ spring:
       time-to-live: 60000
       cache-null-values: false
 
+app:
+  api-url: https://api.example.com
+  user-data-file: users.json
+
 logging:
   level:
     root: INFO
