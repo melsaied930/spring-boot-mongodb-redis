@@ -1,0 +1,305 @@
+Please help me to write a bash file to connect to vpn network.
+all vpn connection parameters  will be stored in a separate file.
+please implement vpn connection start
+please implement vpn connection end
+please implement vpn connection status (show vpn status and ping dynamic list of ips then report )
+
+
+vpn-check.sh
+vpn-connect.sh
+vpn-disconnect.sh
+vpn.env
+
+
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+1) "key1"
+2) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+1) "users::101"
+2) "key1"
+3) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+1) "key1"
+2) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+1) "users::147"
+2) "key1"
+3) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+1) "users::149"
+2) "key1"
+3) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+1) "key1"
+2) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+1) "users::154"
+2) "key1"
+3) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+1) "key1"
+2) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+1) "key1"
+2) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+1) "key1"
+2) "test"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+ 1) "users::159"
+ 2) "users::163"
+ 3) "users::175"
+ 4) "users::156"
+ 5) "users::181"
+ 6) "users::180"
+ 7) "users::165"
+ 8) "users::169"
+ 9) "users::176"
+10) "users::178"
+11) "users::160"
+12) "users::170"
+13) "users::162"
+14) "key1"
+15) "users::166"
+16) "users::179"
+17) "users::161"
+18) "users::168"
+19) "users::167"
+20) "users::177"
+21) "users::171"
+22) "test"
+23) "users::174"
+24) "users::164"
+25) "users::173"
+26) "users::157"
+27) "users::158"
+28) "users::172"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+ 1) "users::159"
+ 2) "users::183"
+ 3) "users::175"
+ 4) "users::180"
+ 5) "users::181"
+ 6) "users::176"
+ 7) "users::170"
+ 8) "users::160"
+ 9) "key1"
+10) "users::162"
+11) "users::166"
+12) "users::161"
+13) "users::168"
+14) "users::167"
+15) "users::177"
+16) "test"
+17) "users::174"
+18) "users::173"
+19) "users::187"
+20) "users::184"
+21) "users::185"
+22) "users::172"
+23) "users::163"
+24) "users::156"
+25) "users::169"
+26) "users::165"
+27) "users::178"
+28) "users::179"
+29) "users::171"
+30) "users::186"
+31) "users::164"
+32) "users::158"
+33) "users::157"
+34) "users::182"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+ 1) "users::159"
+ 2) "users::183"
+ 3) "users::175"
+ 4) "users::180"
+ 5) "users::181"
+ 6) "users::176"
+ 7) "users::170"
+ 8) "users::160"
+ 9) "users::188"
+10) "key1"
+11) "users::162"
+12) "users::166"
+13) "users::161"
+14) "users::190"
+15) "users::168"
+16) "users::167"
+17) "users::177"
+18) "test"
+19) "users::174"
+20) "users::173"
+21) "users::187"
+22) "users::184"
+23) "users::185"
+24) "users::172"
+25) "users::163"
+26) "users::156"
+27) "users::169"
+28) "users::165"
+29) "users::178"
+30) "users::189"
+31) "users::179"
+32) "users::171"
+33) "users::186"
+34) "users::164"
+35) "users::158"
+36) "users::157"
+37) "users::182"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+ 1) "users::159"
+ 2) "users::183"
+ 3) "users::175"
+ 4) "users::180"
+ 5) "users::181"
+ 6) "users::176"
+ 7) "users::170"
+ 8) "users::160"
+ 9) "users::188"
+10) "key1"
+11) "users::162"
+12) "users::166"
+13) "users::161"
+14) "users::190"
+15) "users::168"
+16) "users::167"
+17) "users::177"
+18) "test"
+19) "users::174"
+20) "users::173"
+21) "users::187"
+22) "users::184"
+23) "users::185"
+24) "users::172"
+25) "users::163"
+26) "users::156"
+27) "users::169"
+28) "users::165"
+29) "users::178"
+30) "users::189"
+31) "users::179"
+32) "users::171"
+33) "users::186"
+34) "users::164"
+35) "users::158"
+36) "users::157"
+37) "users::182"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+ 1) "users::159"
+ 2) "users::183"
+ 3) "users::175"
+ 4) "users::180"
+ 5) "users::181"
+ 6) "users::176"
+ 7) "users::170"
+ 8) "users::160"
+ 9) "users::188"
+10) "key1"
+11) "users::162"
+12) "users::166"
+13) "users::161"
+14) "users::190"
+15) "users::168"
+16) "users::167"
+17) "users::177"
+18) "test"
+19) "users::174"
+20) "users::173"
+21) "users::187"
+22) "users::184"
+23) "users::185"
+24) "users::172"
+25) "users::163"
+26) "users::156"
+27) "users::169"
+28) "users::165"
+29) "users::178"
+30) "users::189"
+31) "users::179"
+32) "users::171"
+33) "users::186"
+34) "users::164"
+35) "users::158"
+36) "users::157"
+37) "users::182"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+ 1) "users::159"
+ 2) "users::183"
+ 3) "users::175"
+ 4) "users::180"
+ 5) "users::181"
+ 6) "users::176"
+ 7) "users::170"
+ 8) "users::160"
+ 9) "users::188"
+10) "key1"
+11) "users::162"
+12) "users::166"
+13) "users::161"
+14) "users::190"
+15) "users::168"
+16) "users::167"
+17) "users::177"
+18) "test"
+19) "users::174"
+20) "users::173"
+21) "users::187"
+22) "users::184"
+23) "users::185"
+24) "users::172"
+25) "users::163"
+26) "users::156"
+27) "users::169"
+28) "users::165"
+29) "users::178"
+30) "users::189"
+31) "users::179"
+32) "users::171"
+33) "users::186"
+34) "users::164"
+35) "users::158"
+36) "users::157"
+37) "users::182"
+❯ redis-cli -h 172.24.1.235 -a N9ng......... FLUSHALL
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... FLUSHALL
+OK
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+(empty array)
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+(empty array)
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+(empty array)
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+(empty array)
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.5 -a N9ng......... keys '*'
+(empty array)
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.35 -a N9ng......... keys '*'
+(empty array)
+❯ redis-cli -h 172.24.1.235 -a N9ng......... keys '*'
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.35 -a N9ng......... keys '*'
+(empty array)
+
+    ~/IdeaProjects/spring-boot-mongodb-redis  on   main +9 !12 ?7                                                                                                             ✔  at 15:54:14 

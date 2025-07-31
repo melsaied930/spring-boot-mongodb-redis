@@ -59,3 +59,7 @@ public class CacheController {
         return response;
     }
 }
+
+//curl -X GET http://localhost:8080/api/cache/metrics | jq
+//curl -X GET http://localhost:8080/api/cache/status | jq
+//curl -X POST http://localhost:8080/api/cache/clear | jq

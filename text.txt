@@ -1,0 +1,102 @@
+
+ping -c 2 -W 2 127.0.0.1 > /dev/null 2>&1 && echo "127.0.0.1 Reachable" || echo "127.0.0.1 Unreachable"
+ping -c 2 -W 2 172.24.1.233 > /dev/null 2>&1 && echo "172.24.1.233 Reachable" || echo "172.24.1.233 Unreachable"
+ping -c 2 -W 2 172.24.1.234 > /dev/null 2>&1 && echo "172.24.1.234 Reachable" || echo "172.24.1.234 Unreachable"
+ping -c 2 -W 2 172.24.1.235 > /dev/null 2>&1 && echo "172.24.1.235 Reachable" || echo "172.24.1.235 Unreachable"
+ping -c 2 -W 2 172.24.1.236 > /dev/null 2>&1 && echo "172.24.1.236 Reachable" || echo "172.24.1.236 Unreachable"
+ping -c 2 -W 2 172.24.1.237 > /dev/null 2>&1 && echo "172.24.1.237 Reachable" || echo "172.24.1.237 Unreachable"
+ping -c 2 -W 2 172.24.1.238 > /dev/null 2>&1 && echo "172.24.1.238 Reachable" || echo "172.24.1.238 Unreachable"
+
+mongosh --host 127.0.0.1 --port 27017 --username root --password secret --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+mongosh --host 172.24.1.233 --port 27017 --username root --password secret --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+mongosh --host 172.24.1.234 --port 27017 --username root --password secret --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+mongosh --host 172.24.1.235 --port 27017 --username root --password secret --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+mongosh --host 172.24.1.236 --port 27017 --username root --password secret --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+mongosh --host 172.24.1.237 --port 27017 --username root --password secret --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+mongosh --host 172.24.1.238 --port 27017 --username root --password secret --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 })"
+
+redis-cli -h 127.0.0.1 -p 6379 ping
+redis-cli -h 172.24.1.233 -p 6379 ping
+redis-cli -h 172.24.1.234 -p 6379 ping
+redis-cli -h 172.24.1.235 -p 6379 ping
+redis-cli -h 172.24.1.236 -p 6379 ping
+redis-cli -h 172.24.1.237 -p 6379 ping
+redis-cli -h 172.24.1.238 -p 6379 ping
+
+ssh-copy-id -i ~/.ssh/id_ed25519.pub agillaire-admin@172.24.1.233
+ssh-copy-id -i ~/.ssh/id_ed25519.pub agillaire-admin@172.24.1.234
+ssh-copy-id -i ~/.ssh/id_ed25519.pub agillaire-admin@172.24.1.235
+ssh-copy-id -i ~/.ssh/id_ed25519.pub agillaire-admin@172.24.1.236
+ssh-copy-id -i ~/.ssh/id_ed25519.pub agillaire-admin@172.24.1.237
+ssh-copy-id -i ~/.ssh/id_ed25519.pub agillaire-admin@172.24.1.238
+
+cat ~/.ssh/id_ed25519.pub | ssh agillaire-admin@172.24.1.233 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/id_ed25519.pub | ssh agillaire-admin@172.24.1.234 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/id_ed25519.pub | ssh agillaire-admin@172.24.1.235 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/id_ed25519.pub | ssh agillaire-admin@172.24.1.236 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/id_ed25519.pub | ssh agillaire-admin@172.24.1.237 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/id_ed25519.pub | ssh agillaire-admin@172.24.1.238 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+
+Collins850!
+
+show dbs
+use user_db
+db.user.find()
+
+
+show dbs
+use user_db
+db.dropDatabase()
+
+
+docker exec -it spring-boot-mongodb-redis-redis-1 redis-cli ping
+docker exec -it spring-boot-mongodb-redis-redis-1 redis-cli keys '*'
+docker exec -it spring-boot-mongodb-redis-redis-1 redis-cli monitor
+
+redis-cli -h 172.24.1.235 -a N9nguRwzffDAA37SMdvKatN3mn5rgHxyDvc3+wVvg/N1dZtLSOZkIp70Lwu9QCpk3WEzgxGBr5gC/tJrs monitor
+redis-cli -h 172.24.1.235 -a N9nguRwzffDAA37SMdvKatN3mn5rgHxyDvc3+wVvg/N1dZtLSOZkIp70Lwu9QCpk3WEzgxGBr5gC/tJrs keys '*'
+redis-cli -h <remote-ip> get yourKey
+
+
+redis-cli -h 127.0.0.1 -p 6379 ping
+redis-cli -h 127.0.0.1 -p 6379 -a password ping
+
+
+redis-cli -h 172.24.1.235 -p 6379 -a N9nguRwzffDAA37SMdvKatN3mn5rgHxyDvc3+wVvg/N1dZtLSOZkIp70Lwu9QCpk3WEzgxGBr5gC/tJrs ping
+redis-cli -h 172.24.1.235 -p 6379 -a "$REDIS_PASSWORD" ping
+redis-cli -a
+
+
+
+export REDIS_PASSWORD=N9nguRwzffDAA37SMdvKatN3mn5rgHxyDvc3+wVvg/N1dZtLSOZkIp70Lwu9QCpk3WEzgxGBr5gC/tJrs
+
+❯ cd ~
+❯ sudo openconnect --user=melsaied --passwd-on-stdin vpn.rnd.agillaire.com <<< "5gM0iAvsjAyQ3Zpx"
+Password:
+POST https://vpn.rnd.agillaire.com/
+Connected to 72.135.16.90:443
+SSL negotiation with vpn.rnd.agillaire.com
+Server certificate verify failed: certificate expired
+
+VPN_PASSWORD="5gM0iAvsjAyQ3Zpx"
+VPN_USERNAME="melsaied"
+VPN_URL="vpn.rnd.agillaire.com"
+#VPN_URL="72.135.16.9m"
+
+PING_IPS="127.0.0.1 172.24.1.233 172.24.1.234 172.24.1.235 172.24.1.236 172.24.1.237 172.24.1.238"
+
+❯ ./vpn-connect.sh
+POST https://vpn.xxx.com/
+Connected to 127.0.0.1:000h
+SSL negotiation with vpn.xxx.com
+Server certificate verify failed: signer not found
+Connected to HTTPS on vpn.xxx.com with ciphersuite (TLS1.2)-(ECDHE-SECP256R1)-(RSA-SHA512)-(AES-256-GCM)
+XML POST enabled
+Please enter your username and password.
+POST https://vpn.xxx.com/
+Got CONNECT response: HTTP/1.1 200 OK
+CSTP connected. DPD 30, Keepalive 20
+Established DTLS connection (using GnuTLS). Ciphersuite (DTLS0.9)-(DHE-CUSTOM)-(AES-256-CBC)-(SHA1).
+DTLS connection compression using LZS.
+Configured as 127.0.0.1, with SSL connected and DTLS + LZS connected
+Session authentication will expire at Fri Jun 13 12:34:39 2025

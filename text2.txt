@@ -1,0 +1,222 @@
+- I am working on a java spring boot project connected on a Mongodb
+- I vahe compose.yaml creating tow Mongodbs containers and redis
+- provide me with full details code to save the logs in "log_db" database in cluster mongo2 tables "mongo_log" and "redis_log"
+- please break the connection string "SPRING_DATA_MONGODB_URI=mongodb://root1:pass1@127.0.0.1:27117/user_db?authSource=admin" into username, password, port, IP.....
+- create aspect for redis and mongodb to log everything, and then save all these logs into the DB
+- Enable mongodb logging everything
+- Enable redis logging everything
+- use lombok for logging everything and @Data
+---------------------------------------------------------------------------------------------------------------
+#  src/main/resources/application.yaml
+
+spring:
+  config:
+    import: classpath:env.properties
+  application:
+    name: ${SPRING_APP_NAME:spring-boot}
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI}
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
+      password: ${SPRING_DATA_REDIS_PASSWORD}
+      timeout: 5000
+      repositories:
+        enabled: false
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60000
+      cache-null-values: false
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    MongoDBTransactions: DEBUG
+    RedisTransactions: DEBUG
+    ServiceOperations: DEBUG
+---------------------------------------------------------------------------------------------------------------
+# src/main/resources/env.properties
+
+SPRING_APP_NAME=spring-boot-mongodb-redis
+SPRING_DATA_MONGODB_URI=mongodb://root1:pass1@127.0.0.1:27117/user_db?authSource=admin
+SPRING_DATA_REDIS_HOST=127.0.0.1
+SPRING_DATA_REDIS_PORT=6379
+SPRING_DATA_REDIS_PASSWORD=password
+---------------------------------------------------------------------------------------------------------------
+#  compose.yaml
+
+services:
+  mongo1:
+    image: mongo:latest
+    container_name: mongo1
+    ports:
+      - "${MONGO1_PORT}:${MONGO_DB_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO1_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO1_PASS}
+    volumes:
+      - mongo1_data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD", "mongosh", "--host", "localhost", "--quiet",
+          "--eval", "db.adminCommand('ping')",
+          "--authenticationDatabase", "admin",
+          "-u", "${MONGO1_USER}", "-p", "${MONGO1_PASS}"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+  mongo2:
+    image: mongo:latest
+    container_name: mongo2
+    ports:
+      - "${MONGO2_PORT}:${MONGO_DB_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO2_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO2_PASS}
+    volumes:
+      - mongo2_data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD", "mongosh", "--host", "localhost", "--quiet",
+          "--eval", "db.adminCommand('ping')",
+          "--authenticationDatabase", "admin",
+          "-u", "${MONGO2_USER}", "-p", "${MONGO2_PASS}"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASS}
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT_INTERNAL}"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASS}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+volumes:
+  mongo1_data:
+  mongo2_data:
+  redis_data:
+networks:
+  backend:
+    driver: bridge
+---------------------------------------------------------------------------------------------------------------
+#.env
+
+MONGO_DB_PORT=27017
+MONGO1_PORT=27117
+MONGO1_USER=root1
+MONGO1_PASS=pass1
+MONGO2_PORT=27217
+MONGO2_USER=root2
+MONGO2_PASS=pass2
+REDIS_PORT=6379
+REDIS_PORT_INTERNAL=6379
+REDIS_PASS=password
+---------------------------------------------------------------------------------------------------------------
+package com.example.spring_boot_mongodb_redis.service;
+
+import com.example.spring_boot_mongodb_redis.config.SequenceGeneratorService;
+import com.example.spring_boot_mongodb_redis.model.User;
+import com.example.spring_boot_mongodb_redis.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
+@Service
+public class UserService {
+
+    private final UserRepository repository;
+    private final SequenceGeneratorService sequenceGenerator;
+
+    public UserService(UserRepository repository, SequenceGeneratorService sequenceGenerator) {
+        this.repository = repository;
+        this.sequenceGenerator = sequenceGenerator;
+    }
+
+    @Cacheable(value = "all_users", key = "'getAllUsers'")
+    public List<User> getAll() {
+        return repository.findAll();
+    }
+
+    @Cacheable(value = "users", key = "#id", unless = "#result == null")
+    public User getById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> {
+                    String message = "User not found with ID: " + id;
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, message);
+                });
+    }
+
+    @CachePut(value = "users", key = "#result.id")
+    @CacheEvict(value = "all_users", allEntries = true)
+    public User create(User user) {
+        user.setId(sequenceGenerator.generateSequence("user_sequence"));
+        return repository.save(user);
+    }
+
+    @CachePut(value = "users", key = "#id")
+    @CacheEvict(value = "all_users", allEntries = true)
+    public User update(Long id, User userDetails) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> {
+                    String message = "User not found with ID: " + id;
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, message);
+                });
+
+        user.setFirstName(userDetails.getFirstName());
+        user.setLastName(userDetails.getLastName());
+        user.setMaidenName(userDetails.getMaidenName());
+        user.setGender(userDetails.getGender());
+        user.setEmail(userDetails.getEmail());
+        user.setPhone(userDetails.getPhone());
+        user.setUsername(userDetails.getUsername());
+        user.setPassword(userDetails.getPassword());
+        user.setBirthDate(userDetails.getBirthDate());
+
+        return repository.save(user);
+    }
+
+    @Caching(evict = {
+            @CacheEvict(value = "users", key = "#id"),
+            @CacheEvict(value = "all_users", allEntries = true)
+    })
+    public void delete(Long id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+        } else {
+            String message = "User not found with ID: " + id;
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, message);
+        }
+    }
+
+}
+---------------------------------------------------------------------------------------------------------------

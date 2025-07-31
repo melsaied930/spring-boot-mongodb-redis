@@ -1,6 +1,9 @@
-#  application.yaml
+#  src/main/resources/application.yaml
 
 spring:
+  config:
+    import: classpath:env.properties
+
   application:
     name: ${SPRING_APP_NAME:spring-boot}
 
@@ -11,8 +14,8 @@ spring:
     redis:
       host: ${SPRING_DATA_REDIS_HOST}
       port: ${SPRING_DATA_REDIS_PORT}
-      username: ${SPRING_DATA_REDIS_USERNAME}
       password: ${SPRING_DATA_REDIS_PASSWORD}
+      timeout: 5000
       repositories:
         enabled: false
 
@@ -21,6 +24,10 @@ spring:
     redis:
       time-to-live: 60000
       cache-null-values: false
+
+app:
+  api-url: https://api.example.com
+  user-data-file: users.json
 
 logging:
   level:
